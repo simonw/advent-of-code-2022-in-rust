@@ -3,8 +3,6 @@
 # Use the find command to search for Justfiles in the current directory and its subdirectories
 justfiles=$(find . -name "Justfile")
 
-echo $justfiles
-
 # Save the current directory so we can change back to it later
 orig_dir=$(pwd)
 
