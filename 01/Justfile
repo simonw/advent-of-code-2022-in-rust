@@ -1,0 +1,7 @@
+run: build
+    ./elf-count
+    ./elf-count-top-three
+
+build:
+    rustc elf-count.rs
+    rustc elf-count-top-three.rs
