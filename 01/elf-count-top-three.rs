@@ -18,6 +18,7 @@ fn main() -> io::Result<()> {
         if line.is_empty() {
             elves.push(current);
             current = 0;
+            continue;
         }
 
         match line.parse::<i32>() {

@@ -46,6 +46,7 @@ fn main() -> io::Result<()> {
                 max = current;
             }
             current = 0;
+            continue;
         }
 
         // Parse the line as an 'i32' (32-bit signed integer) and bind the
