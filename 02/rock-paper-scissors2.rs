@@ -66,6 +66,7 @@ fn main() -> io::Result<()> {
         };
         println!("{} {} {} {}", opponent, me, win_score, extra_score);
         score += extra_score;
+        score += win_score;
     }
     println!("{}", score);
     Ok(())
