@@ -29,12 +29,11 @@ fn main() -> io::Result<()> {
         Lowercase item types a through z have priorities 1 through 26.
         Uppercase item types A through Z have priorities 27 through 52.
         */
-        let prioriy_u8 = match duplicate {
+        let priority = match duplicate {
             'a'..='z' => duplicate as u8 - 'a' as u8 + 1,
             'A'..='Z' => duplicate as u8 - 'A' as u8 + 27,
             _ => 0,
-        };
-        let priority = prioriy_u8 as i32;
+        } as i32;
         println!("{}: {}", line, priority);
         score += priority;
     }
