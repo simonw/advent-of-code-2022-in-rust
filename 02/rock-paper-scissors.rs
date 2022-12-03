@@ -15,10 +15,16 @@ fn main() -> io::Result<()> {
         let opponent = parts.next().unwrap();
         let me = parts.next().unwrap();
         
+        /*
+        A/X = rock
+        B/Y = paper
+        C/Z = scissors
+        */
+
         // Who won? Opponent A beats me Z, B beats me X, C beats me Y
         let win_score = match (opponent, me) {
             ("A", "Z") | ("B", "X") | ("C", "Y") => 0,
-            ("A", "X") | ("B", "Y") | ("C", "Z") => 6,
+            ("A", "Y") | ("B", "Z") | ("C", "X") => 6,
             _ => 3,
         };
         score += win_score;
