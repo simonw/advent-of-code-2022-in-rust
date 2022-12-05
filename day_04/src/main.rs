@@ -2,6 +2,10 @@ use std::fs;
 use std::io;
 use std::io::BufRead;
 
+fn range_contains_range(range: (u32, u32), other: (u32, u32)) -> bool {
+    range.0 <= other.0 && range.1 >= other.1
+}
+
 fn main() -> Result<(), std::io::Error> {
     // Read file line by line
     let file = fs::File::open("input.txt")?;
@@ -19,13 +23,14 @@ fn main() -> Result<(), std::io::Error> {
         let b = b.parse::<u32>().unwrap();
         let c = c.parse::<u32>().unwrap();
         let d = d.parse::<u32>().unwrap();
-        // Check if range a-b contains c-d or vice versa
-        if (a <= c && c <= b) || (a <= d && d <= b) {
-            println!("{}-{} fully overlaps {}-{}", a, b, c, d);
+
+        let range1 = (a, b);
+        let range2 = (c, d);
+
+        if range_contains_range(range1, range2) || range_contains_range(range2, range1) {
             score += 1;
         }
     }
     println!("Score: {}", score);
     Ok(())
 }
-
