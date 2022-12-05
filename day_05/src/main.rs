@@ -1,9 +1,25 @@
+use std::env;
 use std::fs;
 use std::io;
 use std::io::BufRead;
 
 
+
 fn main() -> Result<(), std::io::Error> {
+    // Get the arguments as an iterator
+    let args: Vec<String> = env::args().collect();
+
+    // Ensure that at least one argument was passed
+    if args.len() < 2 {
+        println!("error: missing required argument 'filename'");
+        return Ok(());
+    }
+
+    // Get the value of the filename argument
+    let filename = &args[1];
+
+    // Check if the multistack flag was passed
+    let multistack = args.iter().any(|arg| arg == "--multistack" || arg == "-m");
     /*
                     [V]     [C]     [M]
     [V]     [J]     [N]     [H]     [V]
@@ -17,7 +33,7 @@ fn main() -> Result<(), std::io::Error> {
     */
     // Start by reading the file up to the blank line
     // and parsing it into a vector of vector-char stacks
-    let file = fs::File::open("input.txt")?;
+    let file = fs::File::open(filename)?;
     let reader = io::BufReader::new(file);
     let mut stacks = Vec::new();
     // Populate with 9 empty stacks of chars
@@ -77,10 +93,26 @@ fn main() -> Result<(), std::io::Error> {
         println!(" to stack before: {:?}", stacks[(to_stack - 1) as usize]);
 
         // Move the cards
-        for _ in 0..num_cards {
-            let card = stacks[from_stack as usize - 1].pop().unwrap();
-            stacks[to_stack as usize - 1].push(card);
+        if multistack {
+            // Create vector for cards to move
+            let mut cards_to_move = Vec::new();
+            for _ in 0..num_cards {
+                let card = stacks[from_stack as usize - 1].pop().unwrap();
+                cards_to_move.push(card);
+            }
+            cards_to_move.reverse();
+            // Move them
+            for card in cards_to_move {
+                stacks[to_stack as usize - 1].push(card);
+            }
+        } else {
+            // Move cards one at a time
+            for _ in 0..num_cards {
+                let card = stacks[from_stack as usize - 1].pop().unwrap();
+                stacks[to_stack as usize - 1].push(card);
+            }
         }
+        
         println!(" from stack after: {:?}", stacks[(from_stack - 1) as usize]);
         println!(" to stack after: {:?}", stacks[(to_stack - 1) as usize]);
 
