@@ -6,12 +6,12 @@ use std::io::BufRead;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-   /// File to read
-   filename: String,
+    /// File to read
+    filename: String,
 
-   /// Length of characters to seek
-   #[arg(short, long, default_value_t = 4)]
-   length: u16,
+    /// Length of characters to seek
+    #[arg(short, long, default_value_t = 4)]
+    length: u16,
 }
 
 fn main() -> Result<(), std::io::Error> {
@@ -36,7 +36,10 @@ fn main() -> Result<(), std::io::Error> {
         // If the set has X characters, print last X
         if set.len() == args.length.into() {
             println!("Found it");
-            let x_chars = chars.iter().skip((i - (length - 1)).into()).take(length.into());
+            let x_chars = chars
+                .iter()
+                .skip((i - (length - 1)).into())
+                .take(length.into());
             println!("{}", x_chars.collect::<String>());
             println!("Index: {}", i);
             break;
