@@ -11,7 +11,7 @@ struct Args {
 
    /// Length of characters to seek
    #[arg(short, long, default_value_t = 4)]
-   length: u8,
+   length: u16,
 }
 
 fn main() -> Result<(), std::io::Error> {
@@ -27,7 +27,7 @@ fn main() -> Result<(), std::io::Error> {
     // Turn that into a vector of chars
     let chars: Vec<char> = line.chars().collect();
 
-    for i in args.length..(chars.len() as u8) {
+    for i in args.length..(chars.len() as u16) {
         // Put previous X characters in a set
         let mut set = std::collections::HashSet::new();
         for j in i - args.length..i {
