@@ -27,7 +27,7 @@ impl Map {
         // Visible from top?
         for i in 0..y {
             let char = self.get(x, i);
-            if char > current_char {
+            if char >= current_char {
                 visible_from_top = false;
                 break;
             }
@@ -35,7 +35,7 @@ impl Map {
         // Visible from bottom?
         for i in y+1..self.lines.len() {
             let char = self.get(x, i);
-            if char > current_char {
+            if char >= current_char {
                 visible_from_bottom = false;
                 break;
             }
@@ -43,7 +43,7 @@ impl Map {
         // Visible from left?
         for i in 0..x {
             let char = self.get(i, y);
-            if char > current_char {
+            if char >= current_char {
                 visible_from_left = false;
                 break;
             }
@@ -51,7 +51,7 @@ impl Map {
         // Visible from right?
         for i in x+1..self.lines[y].len() {
             let char = self.get(i, y);
-            if char > current_char {
+            if char >= current_char {
                 visible_from_right = false;
                 break;
             }
@@ -61,7 +61,7 @@ impl Map {
 }
 
 fn main() {
-    let file_contents = fs::read_to_string("example.txt").unwrap();
+    let file_contents = fs::read_to_string("input.txt").unwrap();
     let mut map = Map {
         lines: Vec::new(),
     };
