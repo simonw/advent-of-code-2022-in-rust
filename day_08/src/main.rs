@@ -9,6 +9,7 @@ struct Map {
 struct ScenicScore {
     x: usize,
     y: usize,
+    char: char,
     top: usize,
     bottom: usize,
     left: usize,
@@ -20,8 +21,8 @@ impl fmt::Debug for ScenicScore {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "({}, {}) top: {}, bottom: {}, left: {}, right: {}, score: {}",
-            self.x, self.y, self.top, self.bottom, self.left, self.right, self.score
+            "({}, {}) char: {}, top: {}, bottom: {}, left: {}, right: {}, score: {}",
+            self.x, self.y, self.char, self.top, self.bottom, self.left, self.right, self.score
         )
     }
 }
@@ -97,34 +98,34 @@ impl Map {
         // Top: look from current position, in reverse direction
         for i in (0..y).rev() {
             let char = self.get(x, i);
+            top += 1;
             if char >= current_char {
                 break;
             }
-            top += 1;
         }
         // Bottom
         for i in y + 1..self.lines.len() {
             let char = self.get(x, i);
+            bottom += 1;
             if char >= current_char {
                 break;
             }
-            bottom += 1;
         }
         // Left - look from current position, in reverse direction
         for i in (0..x).rev() {
             let char = self.get(i, y);
+            left += 1;
             if char >= current_char {
                 break;
             }
-            left += 1;
         }
         // Right
         for i in x + 1..self.lines[y].len() {
             let char = self.get(i, y);
+            right += 1;
             if char >= current_char {
                 break;
             }
-            right += 1;
         }
         (top, bottom, left, right)
     }
@@ -147,8 +148,9 @@ fn main() {
                 print!(" ");
             }
         }
-        // Output the line too
-        println!("    {}", map.lines[y]);
+        // Output the line too, with extra spaces between characters
+        let spaced_line = map.lines[y].replace("", " ");
+        println!("    {}", spaced_line);
     }
     println!("\nVisible count: {}", visible_count);
 
@@ -162,6 +164,7 @@ fn main() {
             scenic_scores.push(ScenicScore {
                 x,
                 y,
+                char: map.get(x, y),
                 top,
                 bottom,
                 left,
