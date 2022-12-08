@@ -165,15 +165,15 @@ fn main() {
     println!("Directory sizes: {:?}", directory_sizes);
 
     // Need 30000000 free to run update, which directories could we delete to get that?
-    let free_space = 30000000;
-    let space_needed_to_free = total_size_of_everything - free_space;
+    let space_needed = 70000000 - 30000000;
+    let space_needed_to_free = total_size_of_everything - space_needed;
     println!("Space needed to free: {}", space_needed_to_free);
 
     let candidates = directory_sizes
         .iter()
         .filter(|(_, _, size)| *size >= space_needed_to_free)
         .collect::<Vec<_>>();
-    
+
     println!("Candidates: {:?}", candidates);
 
     // Sort candidates by third value in tuple
