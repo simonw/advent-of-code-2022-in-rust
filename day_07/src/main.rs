@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fs;
 
 #[derive(Debug)]
@@ -12,24 +13,25 @@ struct Directory {
     // List of references to directories
     directories: Vec<usize>,
     // List of references to files
-    files: Vec<usize>
+    files: Vec<usize>,
 }
 
 fn main() {
     let file_contents = fs::read_to_string("input.txt").unwrap();
 
-    let mut directories = vec![
-        Directory {
-            name: String::from(""),
-            directories: Vec::new(),
-            files: Vec::new()
-        }
-    ];
+    let mut directories = vec![Directory {
+        name: String::from(""),
+        directories: Vec::new(),
+        files: Vec::new(),
+    }];
     let mut files: Vec<File> = Vec::new();
 
     let mut current_directory_idx: usize = 0;
 
-    println!("Current directory index: {}, current directory: {:?}", current_directory_idx, directories[current_directory_idx]);
+    println!(
+        "Current directory index: {}, current directory: {:?}",
+        current_directory_idx, directories[current_directory_idx]
+    );
 
     for line in file_contents.lines() {
         match line {
@@ -47,7 +49,10 @@ fn main() {
                             break;
                         }
                     }
-                    println!("cd .. got us to '{}'", directories[current_directory_idx].name);
+                    println!(
+                        "cd .. got us to '{}'",
+                        directories[current_directory_idx].name
+                    );
                 } else {
                     // Cd to this directory
                     let mut found = false;
@@ -63,11 +68,13 @@ fn main() {
                         let new_dir = Directory {
                             name: String::from(path),
                             directories: Vec::new(),
-                            files: Vec::new()
+                            files: Vec::new(),
                         };
                         directories.push(new_dir);
                         let new_dir_idx = directories.len() - 1;
-                        directories[current_directory_idx].directories.push(new_dir_idx);
+                        directories[current_directory_idx]
+                            .directories
+                            .push(new_dir_idx);
                         current_directory_idx = new_dir_idx;
                     }
                 }
@@ -83,10 +90,12 @@ fn main() {
                 println!("file: '{}', size: {}", filename, file_size);
                 let new_file = File {
                     filename: String::from(filename),
-                    length: file_size
+                    length: file_size,
                 };
                 files.push(new_file);
-                directories[current_directory_idx].files.push(files.len() - 1);
+                directories[current_directory_idx]
+                    .files
+                    .push(files.len() - 1);
             }
             line => {
                 println!("line: {}", line);
@@ -108,7 +117,7 @@ fn main() {
 
     // Determine the total size of each directory, including nested files
     let mut total_sizes = vec![0; directories.len()];
-    
+
     // Looping through directories backwards should accumulate the total size of each directory
     for (i, directory) in directories.iter().enumerate().rev() {
         for file_idx in &directory.files {
@@ -131,6 +140,81 @@ fn main() {
     for dir_idx in &small_directories {
         total_size_small_directories += total_sizes[*dir_idx];
     }
-    println!("Total size of small directories: {}", total_size_small_directories);
+    println!(
+        "Total size of small directories: {}",
+        total_size_small_directories
+    );
+    println!("");
+    println!("Part 2");
+    println!("======");
+    println!("");
 
+    let total_size_of_everything = total_size_for_directory_idx(0, &directories, &files);
+
+    println!("Total size of everything: {}", total_size_of_everything);
+
+    // Build list of tuples of (directory_idx, directory_name, total_size)
+    let mut directory_sizes = Vec::new();
+    for (idx, directory) in directories.iter().enumerate() {
+        directory_sizes.push((
+            idx,
+            directory.name.clone(),
+            total_size_for_directory_idx(idx, &directories, &files),
+        ));
+    }
+    println!("Directory sizes: {:?}", directory_sizes);
+
+    // Need 30000000 free to run update, which directories could we delete to get that?
+    let free_space = 30000000;
+    let space_needed_to_free = total_size_of_everything - free_space;
+    println!("Space needed to free: {}", space_needed_to_free);
+
+    let candidates = directory_sizes
+        .iter()
+        .filter(|(_, _, size)| *size >= space_needed_to_free)
+        .collect::<Vec<_>>();
+    
+    println!("Candidates: {:?}", candidates);
+
+    // Sort candidates by third value in tuple
+    let mut candidates = candidates;
+    candidates.sort_by(|(_, _, size1), (_, _, size2)| size1.cmp(size2));
+    println!("Sorted candidates: {:?}", candidates);
+
+    if candidates.len() > 0 {
+        println!("So the directory to delete is: {:?}", candidates[0]);
+    } else {
+        println!("No candidates found");
+    }
+}
+
+fn find_all_directory_children(
+    directory_idx: usize,
+    directories: &Vec<Directory>,
+) -> HashSet<usize> {
+    let mut directory_idxs = HashSet::new();
+    directory_idxs.insert(directory_idx);
+    // Children of this idx
+    for dir_idx in &directories[directory_idx].directories {
+        directory_idxs.insert(*dir_idx);
+        for recursive_idx in find_all_directory_children(*dir_idx, directories) {
+            directory_idxs.insert(recursive_idx);
+        }
+    }
+    directory_idxs
+}
+
+fn total_size_for_directory_idx(
+    directory_idx: usize,
+    directories: &Vec<Directory>,
+    files: &Vec<File>,
+) -> usize {
+    let mut total_size = 0;
+    let directory_children = find_all_directory_children(directory_idx, &directories);
+    for directory_idx in directory_children {
+        for file_idx in &directories[directory_idx].files {
+            total_size += files[*file_idx].length;
+        }
+    }
+    total_size
 }
