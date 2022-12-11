@@ -4,7 +4,7 @@ use std::fs;
 #[derive(Debug)]
 enum Operand {
     // Can either be an integer or a 'Old'
-    Int(u128),
+    Int(i64),
     Old,
 }
 #[derive(Debug)]
@@ -16,14 +16,14 @@ enum Op {
 #[derive(Debug)]
 struct Monkey {
     id: i32,
-    items: Vec<u128>,
+    items: Vec<i64>,
     operation_left: Operand,
     operation_right: Operand,
     operation_op: Op,
-    test_divisible_by: u128,
+    test_divisible_by: i64,
     if_true_monkey: i32,
     if_false_monkey: i32,
-    items_inspected: u128,
+    items_inspected: i64,
 }
 
 fn main() {
@@ -48,8 +48,8 @@ fn main() {
         let monkey_id = cap[1].parse::<i32>().unwrap();
         let items = cap[2]
             .split(", ")
-            .map(|x| x.parse::<u128>().unwrap())
-            .collect::<Vec<u128>>();
+            .map(|x| x.parse::<i64>().unwrap())
+            .collect::<Vec<i64>>();
         let operation_op = match &cap[3] {
             "+" => Op::Plus,
             "*" => Op::Times,
@@ -59,9 +59,9 @@ fn main() {
         println!("Dealing with {}", &cap[4]);
         let operation_right = match &cap[4] == "old" {
             true => Operand::Old,
-            false => Operand::Int(cap[4].parse::<u128>().unwrap()),
+            false => Operand::Int(cap[4].parse::<i64>().unwrap()),
         };
-        let test_divisible_by = cap[5].parse::<u128>().unwrap();
+        let test_divisible_by = cap[5].parse::<i64>().unwrap();
         let if_true_monkey = cap[6].parse::<i32>().unwrap();
         let if_false_monkey = cap[7].parse::<i32>().unwrap();
 
@@ -78,7 +78,14 @@ fn main() {
         };
         monkeys.push(monkey);
     }
-    // Run multiple rounds
+
+    let common_divider: i64 = monkeys
+        .iter()
+        .map(|monkey| monkey.test_divisible_by)
+        .product();
+
+    println!("Common divider: {}", common_divider);
+
     for round in 1..10001 {
         // Loop through and process every monkey
         for i in 0..monkeys.len() {
@@ -120,7 +127,7 @@ fn main() {
                     0 => monkey.if_true_monkey,
                     _ => monkey.if_false_monkey,
                 };
-                items_to_send.push((target_monkey_idx, result));
+                items_to_send.push((target_monkey_idx, result % common_divider));
             }
             println!(
                 "  Monkey {}, items_to_send = {:?}",
@@ -139,7 +146,7 @@ fn main() {
         let items_inspected = monkeys
             .iter()
             .map(|x| x.items_inspected)
-            .collect::<Vec<u128>>();
+            .collect::<Vec<i64>>();
         // Pick the top two
         let mut top_two = items_inspected.clone();
         top_two.sort();
