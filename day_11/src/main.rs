@@ -4,7 +4,7 @@ use std::fs;
 #[derive(Debug)]
 enum Operand {
     // Can either be an integer or a 'Old'
-    Int(i32),
+    Int(u128),
     Old,
 }
 #[derive(Debug)]
@@ -16,20 +16,20 @@ enum Op {
 #[derive(Debug)]
 struct Monkey {
     id: i32,
-    items: Vec<i32>,
+    items: Vec<u128>,
     operation_left: Operand,
     operation_right: Operand,
     operation_op: Op,
-    test_divisible_by: i32,
+    test_divisible_by: u128,
     if_true_monkey: i32,
     if_false_monkey: i32,
-    items_inspected: i32,
+    items_inspected: u128,
 }
 
 fn main() {
     let mut monkeys = Vec::new();
 
-    let file_contents = fs::read_to_string("input.txt").unwrap();
+    let file_contents = fs::read_to_string("example.txt").unwrap();
 
     let re = Regex::new(
         r"Monkey (\d+):\s*
@@ -48,8 +48,8 @@ fn main() {
         let monkey_id = cap[1].parse::<i32>().unwrap();
         let items = cap[2]
             .split(", ")
-            .map(|x| x.parse::<i32>().unwrap())
-            .collect::<Vec<i32>>();
+            .map(|x| x.parse::<u128>().unwrap())
+            .collect::<Vec<u128>>();
         let operation_op = match &cap[3] {
             "+" => Op::Plus,
             "*" => Op::Times,
@@ -59,9 +59,9 @@ fn main() {
         println!("Dealing with {}", &cap[4]);
         let operation_right = match &cap[4] == "old" {
             true => Operand::Old,
-            false => Operand::Int(cap[4].parse::<i32>().unwrap()),
+            false => Operand::Int(cap[4].parse::<u128>().unwrap()),
         };
-        let test_divisible_by = cap[5].parse::<i32>().unwrap();
+        let test_divisible_by = cap[5].parse::<u128>().unwrap();
         let if_true_monkey = cap[6].parse::<i32>().unwrap();
         let if_false_monkey = cap[7].parse::<i32>().unwrap();
 
@@ -78,8 +78,8 @@ fn main() {
         };
         monkeys.push(monkey);
     }
-    // Run 20 rounds
-    for round in 1..21 {
+    // Run multiple rounds
+    for round in 1..10001 {
         // Loop through and process every monkey
         for i in 0..monkeys.len() {
             let monkey = &mut monkeys[i];
@@ -90,6 +90,10 @@ fn main() {
                 monkey.items_inspected += 1;
                 let mut result = 0;
                 // First the monkey applies the operation to the item
+                println!(
+                    "About to attempt operation: {:?} {:?} {:?}, Old = {}",
+                    monkey.operation_left, monkey.operation_op, monkey.operation_right, item
+                );
                 match monkey.operation_op {
                     Op::Plus => {
                         result = match monkey.operation_left {
@@ -110,9 +114,8 @@ fn main() {
                         };
                     }
                 }
-                // After each monkey inspects an item but before it tests your worry level,
-                // worry level divides by 3 rounded down to nearest integer
-                result = result / 3;
+                // Worry level no longer reduces:
+                // result = result / 3;
                 let target_monkey_idx = match result % monkey.test_divisible_by {
                     0 => monkey.if_true_monkey,
                     _ => monkey.if_false_monkey,
@@ -136,7 +139,7 @@ fn main() {
         let items_inspected = monkeys
             .iter()
             .map(|x| x.items_inspected)
-            .collect::<Vec<i32>>();
+            .collect::<Vec<u128>>();
         // Pick the top two
         let mut top_two = items_inspected.clone();
         top_two.sort();
