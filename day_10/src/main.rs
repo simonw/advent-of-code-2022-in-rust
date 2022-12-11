@@ -1,7 +1,7 @@
 use std::fs;
 
 fn main() {
-    let file_contents = fs::read_to_string("example.txt").unwrap();
+    let file_contents = fs::read_to_string("input.txt").unwrap();
 
     /*
     File format:
