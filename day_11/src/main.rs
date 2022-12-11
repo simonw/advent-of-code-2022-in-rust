@@ -25,6 +25,51 @@ struct Monkey {
     if_false_monkey: i32,
 }
 
+// Method on Monkey called "x"
+impl Monkey {
+    fn push_item(&mut self, item: i32) {
+        self.items.push(item);
+    }
+    fn take_turn(&self, monkeys: &mut Vec<Monkey>) {
+        // Iterate over the item indexes
+        for i in 0..self.items.len() {
+            let (target_monkey_idx, result) = self.process_item(i);
+            monkeys[target_monkey_idx].push_item(result);
+        }
+    }
+
+    fn process_item(&self, item_idx: usize) -> (usize, i32) {
+        let mut result = 0;
+        let old = self.items[item_idx as usize];
+        // First the monkey applies the operation to the item
+        match self.operation_op {
+            Op::Plus => {
+                result = match self.operation_left {
+                    Operand::Int(i) => i,
+                    Operand::Old => old,
+                } + match self.operation_right {
+                    Operand::Int(i) => i,
+                    Operand::Old => old,
+                };
+            }
+            Op::Times => {
+                result = match self.operation_left {
+                    Operand::Int(i) => i,
+                    Operand::Old => old,
+                } * match self.operation_right {
+                    Operand::Int(i) => i,
+                    Operand::Old => old,
+                };
+            }
+        }
+        let target_monkey_idx = match result % self.test_divisible_by {
+            0 => self.if_true_monkey,
+            _ => self.if_false_monkey,
+        };
+        return (target_monkey_idx as usize, result);
+    }
+}
+
 fn main() {
     let mut monkeys = Vec::new();
 
@@ -54,13 +99,12 @@ fn main() {
             "*" => Op::Times,
             _ => panic!("Unknown operation"),
         };
-        let operation_left = Operand::Old;
-        let mut operation_right = Operand::Old;
+        let mut operation_left = Operand::Old;
         println!("Dealing with {}", &cap[4]);
-        match &cap[4] == "old" {
-            true => operation_right = Operand::Old,
-            false => operation_right = Operand::Int(cap[4].parse::<i32>().unwrap()),
-        }
+        let operation_right = match &cap[4] == "old" {
+            true => Operand::Old,
+            false => Operand::Int(cap[4].parse::<i32>().unwrap()),
+        };
         let test_divisible_by = cap[5].parse::<i32>().unwrap();
         let if_true_monkey = cap[6].parse::<i32>().unwrap();
         let if_false_monkey = cap[7].parse::<i32>().unwrap();
@@ -77,7 +121,7 @@ fn main() {
         };
         monkeys.push(monkey);
     }
-    for monkey in &monkeys {
-        println!("{:?}", monkey);
+    for monkey in &mut monkeys {
+        monkey.take_turn(&mut monkeys);
     }
 }
