@@ -23,6 +23,7 @@ struct Monkey {
     test_divisible_by: i32,
     if_true_monkey: i32,
     if_false_monkey: i32,
+    items_inspected: i32,
 }
 
 fn main() {
@@ -73,6 +74,7 @@ fn main() {
             test_divisible_by,
             if_true_monkey,
             if_false_monkey,
+            items_inspected: 0,
         };
         monkeys.push(monkey);
     }
@@ -85,6 +87,7 @@ fn main() {
             while monkey.items.len() > 0 {
                 // Take left-most item from monkey.items
                 let item = monkey.items.remove(0);
+                monkey.items_inspected += 1;
                 let mut result = 0;
                 // First the monkey applies the operation to the item
                 match monkey.operation_op {
@@ -129,5 +132,17 @@ fn main() {
         for monkey in &monkeys {
             println!("Monkey {:?}", monkey);
         }
+        println!("\nLevel of monkey business (product of num inspected for two busiest monkeys):");
+        let items_inspected = monkeys
+            .iter()
+            .map(|x| x.items_inspected)
+            .collect::<Vec<i32>>();
+        // Pick the top two
+        let mut top_two = items_inspected.clone();
+        top_two.sort();
+        top_two.reverse();
+        let top_two = top_two[0..2].to_vec();
+        let level_of_monkey_business = top_two[0] * top_two[1];
+        println!("  {}", level_of_monkey_business);
     }
 }
