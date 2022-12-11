@@ -29,7 +29,7 @@ struct Monkey {
 fn main() {
     let mut monkeys = Vec::new();
 
-    let file_contents = fs::read_to_string("example.txt").unwrap();
+    let file_contents = fs::read_to_string("input.txt").unwrap();
 
     let re = Regex::new(
         r"Monkey (\d+):\s*
