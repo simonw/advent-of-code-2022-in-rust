@@ -55,7 +55,7 @@ fn main() {
             "*" => Op::Times,
             _ => panic!("Unknown operation"),
         };
-        let mut operation_left = Operand::Old;
+        let operation_left = Operand::Old;
         println!("Dealing with {}", &cap[4]);
         let operation_right = match &cap[4] == "old" {
             true => Operand::Old,
@@ -95,7 +95,7 @@ fn main() {
                 // Take left-most item from monkey.items
                 let item = monkey.items.remove(0);
                 monkey.items_inspected += 1;
-                let mut result = 0;
+                let result;
                 // First the monkey applies the operation to the item
                 println!(
                     "About to attempt operation: {:?} {:?} {:?}, Old = {}",
