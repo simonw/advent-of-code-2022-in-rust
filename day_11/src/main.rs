@@ -25,51 +25,6 @@ struct Monkey {
     if_false_monkey: i32,
 }
 
-// Method on Monkey called "x"
-impl Monkey {
-    fn push_item(&mut self, item: i32) {
-        self.items.push(item);
-    }
-    fn take_turn(&self, monkeys: &mut Vec<Monkey>) {
-        // Iterate over the item indexes
-        for i in 0..self.items.len() {
-            let (target_monkey_idx, result) = self.process_item(i);
-            monkeys[target_monkey_idx].push_item(result);
-        }
-    }
-
-    fn process_item(&self, item_idx: usize) -> (usize, i32) {
-        let mut result = 0;
-        let old = self.items[item_idx as usize];
-        // First the monkey applies the operation to the item
-        match self.operation_op {
-            Op::Plus => {
-                result = match self.operation_left {
-                    Operand::Int(i) => i,
-                    Operand::Old => old,
-                } + match self.operation_right {
-                    Operand::Int(i) => i,
-                    Operand::Old => old,
-                };
-            }
-            Op::Times => {
-                result = match self.operation_left {
-                    Operand::Int(i) => i,
-                    Operand::Old => old,
-                } * match self.operation_right {
-                    Operand::Int(i) => i,
-                    Operand::Old => old,
-                };
-            }
-        }
-        let target_monkey_idx = match result % self.test_divisible_by {
-            0 => self.if_true_monkey,
-            _ => self.if_false_monkey,
-        };
-        return (target_monkey_idx as usize, result);
-    }
-}
-
 fn main() {
     let mut monkeys = Vec::new();
 
@@ -121,7 +76,58 @@ fn main() {
         };
         monkeys.push(monkey);
     }
-    for monkey in &mut monkeys {
-        monkey.take_turn(&mut monkeys);
+    // Run 20 rounds
+    for round in 1..21 {
+        // Loop through and process every monkey
+        for i in 0..monkeys.len() {
+            let monkey = &mut monkeys[i];
+            let mut items_to_send = Vec::new();
+            while monkey.items.len() > 0 {
+                // Take left-most item from monkey.items
+                let item = monkey.items.remove(0);
+                let mut result = 0;
+                // First the monkey applies the operation to the item
+                match monkey.operation_op {
+                    Op::Plus => {
+                        result = match monkey.operation_left {
+                            Operand::Int(i) => i,
+                            Operand::Old => item,
+                        } + match monkey.operation_right {
+                            Operand::Int(i) => i,
+                            Operand::Old => item,
+                        };
+                    }
+                    Op::Times => {
+                        result = match monkey.operation_left {
+                            Operand::Int(i) => i,
+                            Operand::Old => item,
+                        } * match monkey.operation_right {
+                            Operand::Int(i) => i,
+                            Operand::Old => item,
+                        };
+                    }
+                }
+                // After each monkey inspects an item but before it tests your worry level,
+                // worry level divides by 3 rounded down to nearest integer
+                result = result / 3;
+                let target_monkey_idx = match result % monkey.test_divisible_by {
+                    0 => monkey.if_true_monkey,
+                    _ => monkey.if_false_monkey,
+                };
+                items_to_send.push((target_monkey_idx, result));
+            }
+            println!(
+                "  Monkey {}, items_to_send = {:?}",
+                monkey.id, items_to_send
+            );
+            // Now we send the items to the other monkeys
+            for (target_monkey_idx, item) in &items_to_send {
+                monkeys[*target_monkey_idx as usize].items.push(*item);
+            }
+        }
+        println!("\nAfter {} rounds:\n\n", round);
+        for monkey in &monkeys {
+            println!("Monkey {:?}", monkey);
+        }
     }
 }
