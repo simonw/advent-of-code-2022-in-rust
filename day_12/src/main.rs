@@ -85,10 +85,11 @@ fn main() {
                 Some(n) => {
                     // Is other_node no more than 1 higher than node?
                     let diff = n.char as i32 - node.char as i32;
-                    println!(
+                    /* println!(
                         " . node: {}, other_node: {}, diff: {}",
                         node.char, n.char, diff
                     );
+                    */
                     if diff <= 1 {
                         connections_to_add.push((node.idx, n.idx));
                     }
@@ -143,4 +144,31 @@ fn main() {
     println!("end graph node: {:?}", end_graph_node);
     println!("");
     println!("Shortest path length: {}", shortest_path[&end_graph_node]);
+
+    // Part 2
+    println!("\nPart 2\n======\n\n");
+
+    // Set to max int:
+    let mut shortest_path_from_an_a = std::i32::MAX;
+
+    // Loop through every `a` node and their index:
+    for (a_node_index, a_node) in nodes.iter().enumerate() {
+        if a_node.char == 'a' {
+            // Run dijkstra's algorithm
+            let a_node = graph_nodes[a_node_index];
+            let shortest_path = dijkstra(&graph, a_node, Some(end_graph_node), |_e| 1);
+
+            if shortest_path.contains_key(&end_graph_node) {
+                let path_length = shortest_path[&end_graph_node];
+                println!("Path length: {} for node: {:?}", path_length, a_node);
+                if path_length < shortest_path_from_an_a {
+                    shortest_path_from_an_a = path_length;
+                }
+            }
+        }
+    }
+    println!(
+        "Shortest path from an `a` node: {}",
+        shortest_path_from_an_a
+    );
 }
