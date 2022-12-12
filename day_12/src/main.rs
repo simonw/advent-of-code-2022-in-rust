@@ -5,6 +5,16 @@ use petgraph::prelude::*;
 use petgraph::Graph;
 */
 
+#[derive(Debug, Clone)]
+struct Node {
+    idx: usize,
+    char: char,
+    x: i32,
+    y: i32,
+    // Vector of indexes in the `nodes` vector of connected nodes
+    connections: Vec<usize>,
+}
+
 fn main() {
     let file_contents = fs::read_to_string("example.txt").unwrap();
     // Create grid
@@ -38,6 +48,67 @@ fn main() {
     println!("{:?}", grid);
     println!("Start coord: {:?}", start_coord);
     println!("End coord: {:?}", end_coord);
+    // Now figure out which nodes are connected to which
+
+    let mut nodes: Vec<Node> = Vec::new();
+    let mut node_idx = 0;
+    // Iterate through grid getting back an index each time
+    for (y, row) in grid.iter().enumerate() {
+        for (x, char) in row.iter().enumerate() {
+            let node = Node {
+                idx: node_idx as usize,
+                char: *char,
+                x: x as i32,
+                y: y as i32,
+                connections: Vec::new(),
+            };
+            nodes.push(node);
+            node_idx += 1;
+        }
+    }
+    println!("{:?}", nodes);
+    // Now populate connections for each node
+    let mut connections_to_add = Vec::new();
+    let nodes_clone = nodes.clone();
+    for node in nodes_clone.iter() {
+        let left_node = nodes_clone
+            .iter()
+            .find(|n| n.x == node.x - 1 && n.y == node.y);
+        let right_node = nodes_clone
+            .iter()
+            .find(|n| n.x == node.x + 1 && n.y == node.y);
+        let up_node = nodes_clone
+            .iter()
+            .find(|n| n.x == node.x && n.y == node.y - 1);
+        let down_node = nodes_clone
+            .iter()
+            .find(|n| n.x == node.x && n.y == node.y + 1);
+        for other_node in vec![left_node, right_node, up_node, down_node] {
+            match other_node {
+                Some(n) => {
+                    // Find difference between n.char and node.char
+                    let diff = (n.char as i32 - node.char as i32).abs();
+                    if diff <= 1 {
+                        println!("{} is connected to {}", node.char, n.char);
+                        connections_to_add.push((node.idx, n.idx));
+                    }
+                }
+                None => {}
+            }
+        }
+        println!("Node: {:?}", node);
+        println!(" . Left: {:?}", left_node);
+        println!(" . Right: {:?}", right_node);
+        println!(" . Up: {:?}", up_node);
+        println!(" . Down: {:?}", down_node);
+    }
+    // Add all those connections
+    for (node_idx, other_node_idx) in connections_to_add.iter() {
+        nodes[*node_idx].connections.push(*other_node_idx);
+    }
+
+    println!("Nodes: {:?}", nodes);
+
     /*
     let mut graph: Graph<(), (), Directed> = Graph::new();
 
