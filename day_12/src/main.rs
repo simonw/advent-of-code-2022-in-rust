@@ -1,9 +1,8 @@
 use std::fs;
-/*
+
 use petgraph::algo::dijkstra;
 use petgraph::prelude::*;
 use petgraph::Graph;
-*/
 
 #[derive(Debug, Clone)]
 struct Node {
@@ -106,37 +105,42 @@ fn main() {
     for (node_idx, other_node_idx) in connections_to_add.iter() {
         nodes[*node_idx].connections.push(*other_node_idx);
     }
-
-    println!("Nodes: {:?}", nodes);
-
-    /*
+    // Build a graph
     let mut graph: Graph<(), (), Directed> = Graph::new();
+    let mut graph_nodes = Vec::new();
 
-    let a = graph.add_node(()); // node with no weight
-    let b = graph.add_node(());
-    let c = graph.add_node(());
-    let d = graph.add_node(());
-    let e = graph.add_node(());
-    let f = graph.add_node(());
-    let g = graph.add_node(());
-    let h = graph.add_node(());
+    // Add a blank node to the graph for every node
+    for _ in nodes.iter() {
+        let graph_node = graph.add_node(());
+        graph_nodes.push(graph_node);
+    }
 
-    graph.extend_with_edges(&[
-        (a, b),
-        (b, c),
-        (c, d),
-        (d, a),
-        (e, f),
-        (b, e),
-        (f, g),
-        (g, h),
-        (h, e),
-    ]);
-    // a ----> b ----> e ----> f
-    // ^       |       ^       |
-    // |       v       |       v
-    // d <---- c       h <---- g
-    let res = dijkstra(&graph, b, None, |_| 1);
-    println!("{:?}", res);
-     */
+    // Populate with connections
+    for node in nodes.iter() {
+        for other_node_idx in node.connections.iter() {
+            graph.add_edge(graph_nodes[node.idx], graph_nodes[*other_node_idx], ());
+        }
+    }
+
+    println!("{:?}", graph);
+
+    // Run dijkstra's algorithm
+
+    let start_node_index = nodes
+        .iter()
+        .position(|n| n.x == start_coord.1 && n.y == start_coord.0)
+        .expect("Couldn't find start node");
+    let end_node_index = nodes
+        .iter()
+        .position(|n| n.x == end_coord.1 && n.y == end_coord.0)
+        .expect("Couldn't find end node");
+
+    let start_graph_node = graph_nodes[start_node_index];
+    let end_graph_node = graph_nodes[end_node_index];
+
+    let shortest_path = dijkstra(&graph, start_graph_node, Some(end_graph_node), |_e| 1);
+
+    println!("Shortest path: {:?}", shortest_path);
+    println!("");
+    println!("Shortest path length: {}", shortest_path[&end_graph_node]);
 }
