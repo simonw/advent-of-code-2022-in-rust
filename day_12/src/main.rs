@@ -15,7 +15,7 @@ struct Node {
 }
 
 fn main() {
-    let file_contents = fs::read_to_string("example.txt").unwrap();
+    let file_contents = fs::read_to_string("input.txt").unwrap();
     // Create grid
     let mut grid: Vec<Vec<char>> = Vec::new();
     let mut start_coord = (0, 0);
@@ -44,7 +44,6 @@ fn main() {
         grid.push(chars);
         line_number += 1;
     }
-    println!("{:?}", grid);
     println!("Start coord: {:?}", start_coord);
     println!("End coord: {:?}", end_coord);
     // Now figure out which nodes are connected to which
@@ -65,7 +64,6 @@ fn main() {
             node_idx += 1;
         }
     }
-    println!("{:?}", nodes);
     // Now populate connections for each node
     let mut connections_to_add = Vec::new();
     let nodes_clone = nodes.clone();
@@ -85,26 +83,27 @@ fn main() {
         for other_node in vec![left_node, right_node, up_node, down_node] {
             match other_node {
                 Some(n) => {
-                    // Find difference between n.char and node.char
-                    let diff = (n.char as i32 - node.char as i32).abs();
+                    // Is other_node no more than 1 higher than node?
+                    let diff = n.char as i32 - node.char as i32;
+                    println!(
+                        " . node: {}, other_node: {}, diff: {}",
+                        node.char, n.char, diff
+                    );
                     if diff <= 1 {
-                        println!("{} is connected to {}", node.char, n.char);
                         connections_to_add.push((node.idx, n.idx));
                     }
                 }
                 None => {}
             }
         }
-        println!("Node: {:?}", node);
-        println!(" . Left: {:?}", left_node);
-        println!(" . Right: {:?}", right_node);
-        println!(" . Up: {:?}", up_node);
-        println!(" . Down: {:?}", down_node);
     }
     // Add all those connections
     for (node_idx, other_node_idx) in connections_to_add.iter() {
         nodes[*node_idx].connections.push(*other_node_idx);
     }
+
+    // println!("{:#?}", nodes);
+
     // Build a graph
     let mut graph: Graph<(), (), Directed> = Graph::new();
     let mut graph_nodes = Vec::new();
@@ -122,10 +121,9 @@ fn main() {
         }
     }
 
-    println!("{:?}", graph);
+    // println!("{:?}", graph);
 
     // Run dijkstra's algorithm
-
     let start_node_index = nodes
         .iter()
         .position(|n| n.x == start_coord.1 && n.y == start_coord.0)
@@ -140,7 +138,9 @@ fn main() {
 
     let shortest_path = dijkstra(&graph, start_graph_node, Some(end_graph_node), |_e| 1);
 
-    println!("Shortest path: {:?}", shortest_path);
+    println!("\nShortest path: {:?}", shortest_path);
+    println!("");
+    println!("end graph node: {:?}", end_graph_node);
     println!("");
     println!("Shortest path length: {}", shortest_path[&end_graph_node]);
 }
