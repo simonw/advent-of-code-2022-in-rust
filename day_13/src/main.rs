@@ -16,7 +16,7 @@ impl PartialEq for NestedInteger {
 }
 
 fn main() {
-    let file_contents = fs::read_to_string("example.txt").unwrap();
+    let file_contents = fs::read_to_string("input.txt").unwrap();
     for line in file_contents.lines() {
         let parsed = parse_line(line);
         println!("{:?}", line);
@@ -40,7 +40,7 @@ fn main() {
             continue;
         } else {
             right = Some(parsed);
-            // Do the thing
+            // Is this pair in the right order?
             if left.unwrap() < right.unwrap() {
                 indexes.push(index);
             }
@@ -49,7 +49,8 @@ fn main() {
         }
     }
     println!("Indexes: {:?}", indexes);
-    println!("Sum: {}", indexes.iter().sum::<usize>());
+    println!("Sum: {}", indexes.iter().sum::<i32>());
+    println!("Last index: {}", index);
 }
 
 fn parse_line(line: &str) -> NestedInteger {
@@ -136,8 +137,8 @@ fn test_two_lines_equal() {
 }
 
 #[parameterized(
-    left = {"[1,1,3,1,1]", "[[1],[2,3,4]]", "[[8,7,6]]", "[[4,4],4,4]", "[7,7,7]", "[]", "[[]]", "[1,[2,[3,[4,[5,6,0]]]],8,9]"},
-    right = {"[1,1,5,1,1]", "[[1],4]", "[9]", "[[4,4],4,4,4]", "[7,7,7,7]", "[3]", "[[[]]]", "[1,[2,[3,[4,[5,6,7]]]],8,9]"}
+    left = {"[1,1,3,1,1]", "[[1],[2,3,4]]", "[[8,7,6]]", "[[4,4],4,4]", "[7,7,7]", "[]", "[[]]", "[1,[2,[3,[4,[5,6,0]]]],8,9]", "[[0,7,7,[1,[3,8,10,8],[3],[2,2]],10],[[0,5,[1,2],[0],[5,7,5]],1,4,[2]],[]]"},
+    right = {"[1,1,5,1,1]", "[[1],4]", "[9]", "[[4,4],4,4,4]", "[7,7,7,7]", "[3]", "[[[]]]", "[1,[2,[3,[4,[5,6,7]]]],8,9]", "[[[2,[]]],[],[9,1]]"}
 )]
 fn test_order_comparison(left: &str, right: &str) {
     // For each example, the one on the left should be < the one on the right
