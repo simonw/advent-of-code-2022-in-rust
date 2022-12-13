@@ -1,11 +1,18 @@
+use parameterized::parameterized;
 use std::fs;
 
 // A struct representing a nested list of lists of integers
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialOrd)]
 struct NestedInteger {
     // value can be blank or an integer
     value: Option<i32>,
     list: Vec<NestedInteger>,
+}
+
+impl PartialEq for NestedInteger {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value && self.list == other.list
+    }
 }
 
 fn main() {
@@ -90,4 +97,29 @@ fn test_parse_line() {
     assert_eq!(parsed.list[1].list.len(), 2);
     assert_eq!(parsed.list[1].list[0].value, Some(3));
     assert_eq!(parsed.list[1].list[1].value, Some(14));
+}
+
+#[test]
+fn test_two_lines_equal() {
+    let line = "[[1, 2], [3, 14]]";
+    let parsed = parse_line(line);
+    let parsed2 = parse_line(line);
+    assert_eq!(parsed, parsed2);
+}
+
+#[parameterized(
+    left = {"[1,1,3,1,1]", "[[1],[2,3,4]]", "[[8,7,6]]", "[[4,4],4,4]", "[7,7,7]", "[]", "[[]]", "[1,[2,[3,[4,[5,6,0]]]],8,9]"},
+    right = {"[1,1,5,1,1]", "[[1],4]", "[9]", "[[4,4],4,4,4]", "[7,7,7,7]", "[3]", "[[[]]]", "[1,[2,[3,[4,[5,6,7]]]],8,9]"}
+)]
+fn test_order_comparison(left: &str, right: &str) {
+    // For each example, the one on the left should be < the one on the right
+    let parsed_left = parse_line(left);
+    let parsed_right = parse_line(right);
+    assert_eq!(
+        parsed_left < parsed_right,
+        true,
+        "{} should be < {}",
+        left,
+        right
+    );
 }
