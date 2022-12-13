@@ -22,6 +22,34 @@ fn main() {
         println!("{:?}", line);
         println!("{:#?}", parsed);
     }
+    // Determine which pairs of packets are already in the right order.
+    // What is the sum of the indices of those pairs?
+    // First, do pairs
+    let mut left = None;
+    let mut right;
+    let mut indexes = Vec::new();
+    let mut index = 1; // Indexes are 1-based
+    for line in file_contents.lines() {
+        // Skip blank lines
+        if line.is_empty() {
+            continue;
+        }
+        let parsed = parse_line(line);
+        if left.is_none() {
+            left = Some(parsed);
+            continue;
+        } else {
+            right = Some(parsed);
+            // Do the thing
+            if left.unwrap() < right.unwrap() {
+                indexes.push(index);
+            }
+            left = None;
+            index += 1;
+        }
+    }
+    println!("Indexes: {:?}", indexes);
+    println!("Sum: {}", indexes.iter().sum::<usize>());
 }
 
 fn parse_line(line: &str) -> NestedInteger {
