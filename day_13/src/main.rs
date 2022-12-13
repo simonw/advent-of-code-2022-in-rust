@@ -9,7 +9,7 @@ struct NestedInteger {
 }
 
 fn main() {
-    let file_contents = fs::read_to_string("example1.txt").unwrap();
+    let file_contents = fs::read_to_string("example.txt").unwrap();
     let mut stack = Vec::new();
     for line in file_contents.lines() {
         // line is a JSON array e.g. [[1, 2], [3, 14]] - parse it
@@ -70,6 +70,6 @@ fn main() {
             }
         }
         println!("{:?}", line);
-        println!("{:?}\n", current);
+        println!("{:#?}", current);
     }
 }
