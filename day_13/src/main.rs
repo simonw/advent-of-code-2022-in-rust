@@ -153,64 +153,6 @@ fn parse_line(line: &str) -> NestedInteger {
     current
 }
 
-/*
-
-fn old_parse_ine(line: &str) -> NestedInteger {
-    let mut stack = Vec::new();
-    let mut current;
-    let mut has_found_first = false;
-    let mut current_integer = 0;
-    let mut in_integer = false;
-    for c in line.chars() {
-        match c {
-            '[' => {
-                // Start of a new list
-                if has_found_first {
-                    stack.push(current);
-                }
-                has_found_first = true;
-                current = NestedInteger::Children(Vec::new());
-                current_integer = 0;
-                in_integer = false;
-            }
-            ']' => {
-                // End of a list
-                if in_integer {
-                    // Push onto Children list in current
-                    match &mut current {
-                        NestedInteger::Children(children) => {
-                            children.push(NestedInteger::Value(current_integer));
-                        }
-                        _ => panic!("Unexpected type"),
-                    }
-                }
-                if let Some(mut parent) = stack.pop() {
-                    parent.push(current.clone());
-                    current = parent;
-                }
-                current_integer = 0;
-                in_integer = false;
-            }
-            ',' => {
-                // End of an integer
-                if in_integer {
-                    current.list.push(NestedInteger::Value(current_integer));
-                    current_integer = 0;
-                    in_integer = false;
-                }
-            }
-            '0'..='9' => {
-                // A digit
-                current_integer = current_integer * 10 + (c as i32 - '0' as i32);
-                in_integer = true;
-            }
-            _ => {}
-        }
-    }
-    current
-}
-*/
-
 #[test]
 fn test_parse_line() {
     let line = "[[1, 2], [3, 14]]";
