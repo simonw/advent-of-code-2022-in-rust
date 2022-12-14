@@ -14,12 +14,8 @@ impl Ord for NestedInteger {
         match (self, other) {
             (NestedInteger::Value(a), NestedInteger::Value(b)) => a.cmp(b),
             // If one side is a value and the other a list, compare to [value] - in both directions:
-            (NestedInteger::Value(_), _) => {
-                NestedInteger::Children(vec![self.clone()]).cmp(other)
-            }
-            (_, NestedInteger::Value(_)) => {
-                self.cmp(&NestedInteger::Children(vec![other.clone()]))
-            }
+            (NestedInteger::Value(_), _) => NestedInteger::Children(vec![self.clone()]).cmp(other),
+            (_, NestedInteger::Value(_)) => self.cmp(&NestedInteger::Children(vec![other.clone()])),
             // If both sides are lists, compare them one element at a time
             (NestedInteger::Children(a), NestedInteger::Children(b)) => {
                 let mut a = a.iter();
@@ -84,6 +80,43 @@ fn main() {
     println!("Indexes: {:?}", indexes);
     println!("Sum: {}", indexes.iter().sum::<i32>());
     println!("Last index: {}", index);
+
+    println!("\nPart 2\n======\n");
+
+    // Load all the packets into a Vec
+    let mut packets = Vec::new();
+    for line in file_contents.lines() {
+        // Skip blank lines
+        if line.is_empty() {
+            continue;
+        }
+        let parsed = parse_line(line);
+        packets.push(parsed);
+    }
+    // Add the two divider packets
+    let divider1 = parse_line("[[2]]");
+    packets.push(divider1);
+    let divider2 = parse_line("[[6]]");
+    packets.push(divider2);
+
+    // Sort the packets
+    packets.sort();
+    println!("Packets: {:?}", packets);
+
+    // Find index of divider1 and divider2
+    let divider1_index = packets
+        .iter()
+        .position(|x| x == &parse_line("[[2]]"))
+        .unwrap()
+        + 1;
+    let divider2_index = packets
+        .iter()
+        .position(|x| x == &parse_line("[[6]]"))
+        .unwrap()
+        + 1;
+    println!("Divider 1 index: {}", divider1_index);
+    println!("Divider 2 index: {}", divider2_index);
+    println!("Multpiled: {}", divider1_index * divider2_index);
 }
 
 fn parse_line(line: &str) -> NestedInteger {
