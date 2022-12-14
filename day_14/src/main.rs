@@ -32,8 +32,15 @@ impl Grid {
         // println!("char_at: {} {}", coord.0, coord.1);
         let x = coord.0 - self.min_x;
         let y = coord.1 - self.min_y;
-        // println!("  translated to: {} {}", x, y);
-        self.lines[y as usize][x as usize]
+        let ch;
+        // If out of bounds, return ' '
+        if x < 0 || y < 0 || x >= self.width as i32 || y >= self.height as i32 {
+            ch = ' ';
+        } else {
+            ch = self.lines[y as usize][x as usize];
+        }
+        // println!("  translated to: {} {} - result is: '{}'", x, y, ch);
+        ch
     }
     fn set_char_at(&mut self, coord: (i32, i32), ch: char) {
         // Add min_x / min_y
@@ -43,7 +50,8 @@ impl Grid {
         // println!("  translated to: {} {}", x, y);
         self.lines[y as usize][x as usize] = ch;
     }
-    fn simulate_sand(&mut self) {
+    fn simulate_sand(&mut self) -> bool {
+        // Returns true if sand was placed, false if it fell into void
         // Sand is added at 500,0
         let mut sand_pos = (500, 0);
         loop {
@@ -51,14 +59,23 @@ impl Grid {
             let below = (sand_pos.0, sand_pos.1 + 1);
             let below_left = (sand_pos.0 - 1, sand_pos.1 + 1);
             let below_right = (sand_pos.0 + 1, sand_pos.1 + 1);
-            if self.char_at(below) == '.' {
+            if self.char_at(below) == '.' || self.char_at(below) == ' ' {
                 sand_pos = below;
+                if self.char_at(sand_pos) == ' ' {
+                    return false;
+                }
                 continue;
-            } else if self.char_at(below_left) == '.' {
+            } else if self.char_at(below_left) == '.'  || self.char_at(below_left) == ' ' {
                 sand_pos = below_left;
+                if self.char_at(sand_pos) == ' ' {
+                    return false;
+                }
                 continue;
-            } else if self.char_at(below_right) == '.' {
+            } else if self.char_at(below_right) == '.' || self.char_at(below_right) == ' ' {
                 sand_pos = below_right;
+                if self.char_at(sand_pos) == ' ' {
+                    return false;
+                }
                 continue;
             } else {
                 // Sand lives here now
@@ -66,12 +83,23 @@ impl Grid {
                 break;
             }
         }
+        true
     }
 }
 
 
 fn main() {
-    println!("Hello, world!");
+    let instructions = String::from(include_str!("../input.txt"));
+    let mut grid = parse_grid(instructions);
+    println!("{}", grid);
+    // Simulate sand until it falls into the void
+    let mut i = 0;
+    while grid.simulate_sand() {
+        i += 1;
+        println!("After {} iterations:", i);
+        println!("{}\n\n", grid);
+    }
+    println!("Final i: {}", i);
 }
 
 
