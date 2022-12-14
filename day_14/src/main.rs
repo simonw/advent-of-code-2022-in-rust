@@ -25,15 +25,61 @@ impl fmt::Display for Grid {
     }
 }
 
+// Add Grid simulate_sand() method:
+impl Grid {
+    fn char_at(&self, coord: (i32, i32)) -> char {
+        // Subtract min_x / min_y
+        // println!("char_at: {} {}", coord.0, coord.1);
+        let x = coord.0 - self.min_x;
+        let y = coord.1 - self.min_y;
+        // println!("  translated to: {} {}", x, y);
+        self.lines[y as usize][x as usize]
+    }
+    fn set_char_at(&mut self, coord: (i32, i32), ch: char) {
+        // Add min_x / min_y
+        // println!("Setting char {} at {:?}", ch, coord);
+        let x = coord.0 - self.min_x;
+        let y = coord.1 - self.min_y;
+        // println!("  translated to: {} {}", x, y);
+        self.lines[y as usize][x as usize] = ch;
+    }
+    fn simulate_sand(&mut self) {
+        // Sand is added at 500,0
+        let mut sand_pos = (500, 0);
+        loop {
+            // Inspect all three spaces below the sand
+            let below = (sand_pos.0, sand_pos.1 + 1);
+            let below_left = (sand_pos.0 - 1, sand_pos.1 + 1);
+            let below_right = (sand_pos.0 + 1, sand_pos.1 + 1);
+            if self.char_at(below) == '.' {
+                sand_pos = below;
+                continue;
+            } else if self.char_at(below_left) == '.' {
+                sand_pos = below_left;
+                continue;
+            } else if self.char_at(below_right) == '.' {
+                sand_pos = below_right;
+                continue;
+            } else {
+                // Sand lives here now
+                self.set_char_at(sand_pos, 'o');
+                break;
+            }
+        }
+    }
+}
+
+
 fn main() {
     println!("Hello, world!");
 }
+
 
 fn parse_grid(input: String) -> Grid {
     // Each line describes a shape of rock drawn on the grid
     let mut min_x = 100000;
     let mut max_x = -100000;
-    let mut min_y = 100000;
+    let mut min_y = 0;
     let mut max_y = -100000;
     let mut grid_lines = Vec::new();
     // First loop to find min/max of everything:
@@ -143,12 +189,12 @@ fn parse_grid(input: String) -> Grid {
 #[test]
 fn test_parse_grid() {
     let instructions = String::from("498,4 -> 498,6 -> 496,6\n503,4 -> 502,4 -> 502,9 -> 494,9");
-    let grid = parse_grid(instructions);
+    let mut grid = parse_grid(instructions);
     assert_eq!(grid.width, 10);
-    assert_eq!(grid.height, 6);
+    assert_eq!(grid.height, 10);
     assert_eq!(grid.min_x, 494);
     assert_eq!(grid.max_x, 503);
-    assert_eq!(grid.min_y, 4);
+    assert_eq!(grid.min_y, 0);
     assert_eq!(grid.max_y, 9);
 
     let as_string = format!("{}", grid);
@@ -156,6 +202,10 @@ fn test_parse_grid() {
     assert_eq!(
         as_string,
         "
+..........
+..........
+..........
+..........
 ....#...##
 ....#...#.
 ..###...#.
@@ -164,4 +214,6 @@ fn test_parse_grid() {
 #########.
 ".trim_start()
     );
+    grid.simulate_sand();
+    println!("{}", grid);
 }
