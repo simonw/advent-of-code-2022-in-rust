@@ -10,6 +10,7 @@ struct Grid {
     min_y: i32,
     max_y: i32,
     lines: Vec<Vec<char>>,
+    has_floor: bool,
 }
 
 impl fmt::Display for Grid {
@@ -25,22 +26,42 @@ impl fmt::Display for Grid {
     }
 }
 
-// Add Grid simulate_sand() method:
 impl Grid {
     fn char_at(&self, coord: (i32, i32)) -> char {
+        if self.has_floor {
+            // an infinite horizontal line with a y coordinate equal to two
+            // plus the highest y coordinate of any point in your scan
+            // println!("Checking floor at: {:?}", coord);
+            println!(
+                "coord: {:?}, coord.0: {}, coord.1: {}, self.max_y + 2: {}",
+                coord,
+                coord.0,
+                coord.1,
+                self.max_y + 2
+            );
+            if coord.1 >= self.max_y + 2 {
+                // println!("Hit floor at {:?}", coord);
+                return '#';
+            }
+        }
         // Subtract min_x / min_y
         // println!("char_at: {} {}", coord.0, coord.1);
         let x = coord.0 - self.min_x;
         let y = coord.1 - self.min_y;
         let ch;
         // If out of bounds, return ' '
-        if x < 0 || y < 0 || x >= self.width as i32 || y >= self.height as i32 {
-            ch = ' ';
+        if !self.has_floor {
+            if x < 0 || y < 0 || x >= self.width as i32 || y >= self.height as i32 {
+                return ' ';
+            } else {
+                return self.lines[y as usize][x as usize];
+            }
         } else {
+            // When there is a floor it can't go out of bounds
+            println!("char_at: {} {}", x, y);
             ch = self.lines[y as usize][x as usize];
+            ch
         }
-        // println!("  translated to: {} {} - result is: '{}'", x, y, ch);
-        ch
     }
     fn set_char_at(&mut self, coord: (i32, i32), ch: char) {
         // Add min_x / min_y
@@ -62,18 +83,31 @@ impl Grid {
             if self.char_at(below) == '.' || self.char_at(below) == ' ' {
                 sand_pos = below;
                 if self.char_at(sand_pos) == ' ' {
+                    println!("Sand fell into void at {:?}", sand_pos);
+                    return false;
+                }
+                if sand_pos == (500, 0) {
+                    println!("Sand got to source");
                     return false;
                 }
                 continue;
-            } else if self.char_at(below_left) == '.'  || self.char_at(below_left) == ' ' {
+            } else if self.char_at(below_left) == '.' || self.char_at(below_left) == ' ' {
                 sand_pos = below_left;
                 if self.char_at(sand_pos) == ' ' {
+                    return false;
+                }
+                if sand_pos == (500, 0) {
+                    println!("Sand got to source");
                     return false;
                 }
                 continue;
             } else if self.char_at(below_right) == '.' || self.char_at(below_right) == ' ' {
                 sand_pos = below_right;
                 if self.char_at(sand_pos) == ' ' {
+                    return false;
+                }
+                if sand_pos == (500, 0) {
+                    println!("Sand got to source");
                     return false;
                 }
                 continue;
@@ -87,10 +121,9 @@ impl Grid {
     }
 }
 
-
 fn main() {
     let instructions = String::from(include_str!("../input.txt"));
-    let mut grid = parse_grid(instructions);
+    let mut grid = parse_grid(instructions, false);
     println!("{}", grid);
     // Simulate sand until it falls into the void
     let mut i = 0;
@@ -100,15 +133,29 @@ fn main() {
         println!("{}\n\n", grid);
     }
     println!("Final i: {}", i);
+
+    println!("\nPart 2\n======\n");
+
+    // Now run simulation again with a floor at two plus the highest y coordinate
+    let mut j = 0;
+    let instructions2 = String::from(include_str!("../input.txt"));
+    let mut grid2 = parse_grid(instructions2, true);
+    while grid2.simulate_sand() {
+        j += 1;
+    }
+    // println!("{}\n\n", grid2);
+    println!("Final j: {}", j);
 }
 
-
-fn parse_grid(input: String) -> Grid {
+fn parse_grid(input: String, has_floor: bool) -> Grid {
     // Each line describes a shape of rock drawn on the grid
     let mut min_x = 100000;
     let mut max_x = -100000;
     let mut min_y = 0;
     let mut max_y = -100000;
+    if has_floor {
+        max_x = 10000000;
+    }
     let mut grid_lines = Vec::new();
     // First loop to find min/max of everything:
     for line in input.lines() {
@@ -209,6 +256,7 @@ fn parse_grid(input: String) -> Grid {
         min_y,
         max_y,
         lines: grid_lines,
+        has_floor,
     }
 }
 
@@ -217,7 +265,7 @@ fn parse_grid(input: String) -> Grid {
 #[test]
 fn test_parse_grid() {
     let instructions = String::from("498,4 -> 498,6 -> 496,6\n503,4 -> 502,4 -> 502,9 -> 494,9");
-    let mut grid = parse_grid(instructions);
+    let mut grid = parse_grid(instructions, false);
     assert_eq!(grid.width, 10);
     assert_eq!(grid.height, 10);
     assert_eq!(grid.min_x, 494);
@@ -240,8 +288,9 @@ fn test_parse_grid() {
 ........#.
 ........#.
 #########.
-".trim_start()
+"
+        .trim_start()
     );
-    grid.simulate_sand();
+    grid.simulate_sand(false);
     println!("{}", grid);
 }
