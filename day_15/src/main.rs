@@ -31,11 +31,9 @@ fn beacon_exists_at(sensors: &Vec<Sensor>, x: i32, y: i32) -> bool {
 }
 
 fn main() {
-    let file_contents = fs::read_to_string("example.txt").unwrap();
+    let file_contents = fs::read_to_string("input.txt").unwrap();
     let mut sensors = Vec::new();
     // Sensor at x=10, y=20: closest beacon is at x=10, y=16
-    let min_x = -100;
-    let max_x = 100;
     let re = Regex::new(r"Sensor at x=(\d+), y=(\d+): closest beacon is at x=(\d+), y=(\d+)").unwrap();
     for cap in re.captures_iter(&file_contents) {
         let sensor = Sensor {
@@ -47,17 +45,43 @@ fn main() {
         sensors.push(sensor);
     }
     // println!("{:#?}", sensors);
-    // How many points on line y=10 could NOT have a sensor?
+
+    // Figure out dimensions of possible space
+    // For each sensor, look at how big its range could possibly be,
+    // then find min and max x and y based on that
+    let mut min_x = 0;
+    let mut max_x = 0;
+    let mut min_y = 0;
+    let mut max_y = 0;
+    for sensor in &sensors {
+        let distance = sensor.distance();
+        if sensor.x - distance < min_x {
+            min_x = sensor.x - distance;
+        }
+        if sensor.x + distance > max_x {
+            max_x = sensor.x + distance;
+        }
+        if sensor.y - distance < min_y {
+            min_y = sensor.y - distance;
+        }
+        if sensor.y + distance > max_y {
+            max_y = sensor.y + distance;
+        }
+    }
+    println!("min_x: {}, max_x: {}, min_y: {}, max_y: {}", min_x, max_x, min_y, max_y);
+
+    // How many points on line y=line_to_search could NOT have a sensor?
+    let line_to_search = 2000000;
     let mut count = 0;
     for x in min_x..=max_x {
         let mut point_cannot_have_beacon = false;
         for sensor in &sensors {
-            if sensor.point_cannot_have_beacon(x, 10) {
+            if sensor.point_cannot_have_beacon(x, line_to_search) {
                 point_cannot_have_beacon = true;
                 break;
             }
         }
-        if point_cannot_have_beacon && !beacon_exists_at(&sensors, x, 10) {
+        if point_cannot_have_beacon && !beacon_exists_at(&sensors, x, line_to_search) {
             count += 1;
         }
     }
