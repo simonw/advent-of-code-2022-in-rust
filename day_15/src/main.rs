@@ -21,6 +21,15 @@ impl Sensor {
     }
 }
 
+fn beacon_exists_at(sensors: &Vec<Sensor>, x: i32, y: i32) -> bool {
+    for sensor in sensors {
+        if sensor.beacon_x == x && sensor.beacon_y == y {
+            return true;
+        }
+    }
+    false
+}
+
 fn main() {
     let file_contents = fs::read_to_string("example.txt").unwrap();
     let mut sensors = Vec::new();
@@ -48,7 +57,7 @@ fn main() {
                 break;
             }
         }
-        if point_cannot_have_beacon {
+        if point_cannot_have_beacon && !beacon_exists_at(&sensors, x, 10) {
             count += 1;
         }
     }
