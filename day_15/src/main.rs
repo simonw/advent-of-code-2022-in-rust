@@ -19,6 +19,40 @@ impl Sensor {
         // This point cannot have a beacon if it is within distance of sensor
         (x - self.x).abs() + (y - self.y).abs() <= self.distance()
     }
+    fn points_around_edge(&self) -> Vec<(i32, i32)> {
+        // Find diagonal points on the border around the edge of the shape
+        let mut points = Vec::new();
+        let mut x = self.x - self.distance();
+        let mut y = self.y - self.distance();
+        let mut dx = 1;
+        let mut dy = 1;
+        let mut d = 0;
+        let mut i = 0;
+        while i < 4 * self.distance() {
+            points.push((x, y));
+            x += dx;
+            y += dy;
+            d += 1;
+            if d == self.distance() {
+                d = 0;
+                if dx == 1 {
+                    dx = 0;
+                    dy = 1;
+                } else if dy == 1 {
+                    dx = -1;
+                    dy = 0;
+                } else if dx == -1 {
+                    dx = 0;
+                    dy = -1;
+                } else if dy == -1 {
+                    dx = 1;
+                    dy = 0;
+                }
+            }
+            i += 1;
+        }
+        points
+    }
 }
 
 fn beacon_exists_at(sensors: &Vec<Sensor>, x: i32, y: i32) -> bool {
@@ -84,7 +118,7 @@ fn main() {
     );
 
     // How many points on line y=line_to_search could NOT have a sensor?
-    let line_to_search = 10;
+    let line_to_search = 10; // 10 or 2000000
     let mut count = 0;
     for x in min_x..=max_x {
         let mut point_cannot_have_beacon = false;
@@ -103,28 +137,38 @@ fn main() {
     println!("\nPart 2\n======\n");
 
     // Search the space to find the beacon
-    let max_search = 20;
-    for x in 0..max_search {
-        for y in 0..max_search {
-            // Is this a beacon or sensor already?
-            if beacon_or_sensor_exists_at(&sensors, x, y) {
-                println!("Skipping {}, {} - overlaps beacon or sensor", x, y);
-                continue;
-            }
-            // Do any of the sensors rule out this point?
-            let mut ruled_out = false;
-            for sensor in &sensors {
-                if sensor.point_cannot_have_beacon(x, y) {
-                    println!("Skipping {}, {} - ruled out by sensor {:?}", x, y, sensor);
-                    ruled_out = true;
-                    break;
+    let max_search = 20; // 20 or 4000000
+
+    // I'm just going to search the points that are a single square outside each sensor
+    for sensor in &sensors {
+        let points = sensor.points_around_edge();
+        println!("Sensor: {:?}", sensor);
+        println!("Points: {:?}", points);
+        continue;
+        'outer: for (x, y) in points {
+            /*
+            if x == 14 && y == 11 {
+                println!("Found it! {:?}", (x, y));
+                // Check no sensor can see it
+                for sensor in &sensors {
+                    if sensor.point_cannot_have_beacon(x, y) {
+                        println!("Sensor {:?} says it cannot be here", sensor);
+                        break;
+                    }
                 }
             }
-            if ruled_out {
+            */
+            if x < 0 || y < 0 {
                 continue;
-            } else {
-                println!("Possible beacon at x={}, y={}", x, y);
             }
+
+            for sensor in &sensors {
+                if sensor.point_cannot_have_beacon(x, y) {
+                    println!("Sensor {:?} says {:?} cannot be here", sensor, (x, y));
+                    break 'outer;
+                }
+            }
+            println!("Found it! {:?}", (x, y));
         }
     }
 }
